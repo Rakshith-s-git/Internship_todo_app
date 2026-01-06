@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -12,55 +12,64 @@ class AuthService {
   // Stream of auth state changes
   Stream<firebase_auth.User?> get authStateChanges => _auth.authStateChanges();
 
-  // Register a new user
+  // Register new user
   Future<String?> register({
     required String email,
     required String password,
-    required String username,
+    required String name,
   }) async {
     try {
       // Validate inputs
-      if (email.isEmpty || password.isEmpty || username.isEmpty) {
-        throw 'All fields are required.';
+      if (email.isEmpty || password.isEmpty || name.isEmpty) {
+        throw 'Please fill all fields';
       }
 
       if (!_isValidEmail(email)) {
-        throw 'Invalid email format.';
+        throw 'Please enter a valid email';
       }
 
       if (password.length < 6) {
-        throw 'Password must be at least 6 characters long.';
+        throw 'Password must be at least 6 characters long';
+      }
+
+      if (!_isStrongPassword(password)) {
+        throw 'Password must contain uppercase, lowercase, and numbers';
       }
 
       // Create user account
-      final firebase_auth.UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
+      firebase_auth.UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+            email: email.trim(),
+            password: password,
+          );
 
-      // Store additional user information in Firestore
+      // Create user document in Firestore
       final user = userCredential.user;
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'email': email,
-        'username': username,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'email': email.trim(),
+          'name': name.trim(),
+          'createdAt': DateTime.now(),
+        });
+      }
 
-      return null; // Return null if registration is successful
+      return null; // Success
     } on firebase_auth.FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
-        return 'The email address is already in use by another account.';
+        return 'Email already registered';
       } else if (e.code == 'weak-password') {
-        return 'The password provided is too weak.';
+        return 'Password is too weak';
       } else if (e.code == 'invalid-email') {
-        return 'The email address is not valid.';
+        return 'Invalid email address';
       }
-      return e.message ?? 'Registration failed. Please try again.';
+      return e.message ?? 'Registration failed';
     } catch (e) {
       return e.toString();
     }
   }
 
   // Login user
-
   Future<String?> login({
     required String email,
     required String password,
@@ -68,44 +77,45 @@ class AuthService {
     try {
       // Validate inputs
       if (email.isEmpty || password.isEmpty) {
-        throw 'Email and password are required.';
+        throw 'Please fill all fields';
       }
 
       if (!_isValidEmail(email)) {
-        throw 'Invalid email format.';
+        throw 'Please enter a valid email';
       }
 
-      // Sign in user
+      // Sign in
       await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-      return null; // Return null if login is successful
+
+      return null; // Success
     } on firebase_auth.FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        return 'No user found for that email.';
+        return 'No user found with this email';
       } else if (e.code == 'wrong-password') {
-        return 'Wrong password provided for that user.';
+        return 'Wrong password';
       } else if (e.code == 'invalid-email') {
-        return 'The email address is not valid.';
+        return 'Invalid email address';
       } else if (e.code == 'user-disabled') {
-        return 'This user account has been disabled.';
+        return 'User account has been disabled';
       }
-      return e.message ?? 'Login failed. Please try again.';
+      return e.message ?? 'Login failed';
     } catch (e) {
       return e.toString();
     }
   }
 
-  // Logout user
+  // Logout
   Future<void> logout() async {
     await _auth.signOut();
   }
 
-  // Get User details from Firestore
+  // Get user details from Firestore
   Future<User?> getUserDetails(String uid) async {
     try {
-      final DocumentSnapshot doc = await _firestore
+      DocumentSnapshot doc = await _firestore
           .collection('users')
           .doc(uid)
           .get();
@@ -115,7 +125,23 @@ class AuthService {
       }
       return null;
     } catch (e) {
+      // Handle error silently
       return null;
+    }
+  }
+
+  // Update user profile
+  Future<String?> updateUserProfile({
+    required String uid,
+    required String name,
+  }) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'name': name.trim(),
+      });
+      return null; // Success
+    } catch (e) {
+      return e.toString();
     }
   }
 
@@ -128,13 +154,13 @@ class AuthService {
   }
 
   // Helper: Check password strength
-  // bool _isStrongPassword(String password) {
-  //   final RegExp hasUppercase = RegExp(r'[A-Z]');
-  //   final RegExp hasLowercase = RegExp(r'[a-z]');
-  //   final RegExp hasNumber = RegExp(r'[0-9]');
+  bool _isStrongPassword(String password) {
+    final RegExp hasUppercase = RegExp(r'[A-Z]');
+    final RegExp hasLowercase = RegExp(r'[a-z]');
+    final RegExp hasNumber = RegExp(r'[0-9]');
 
-  //   return hasUppercase.hasMatch(password) &&
-  //       hasLowercase.hasMatch(password) &&
-  //       hasNumber.hasMatch(password);
-  // }
+    return hasUppercase.hasMatch(password) &&
+        hasLowercase.hasMatch(password) &&
+        hasNumber.hasMatch(password);
+  }
 }

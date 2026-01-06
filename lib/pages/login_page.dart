@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+// import '../widgets/animated_logo.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onRegisterPressed;
@@ -19,7 +21,8 @@ class _LoginPageState extends State<LoginPage>
   bool _isLoading = false;
   bool _showPassword = false;
 
-  // final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService();
+
   late AnimationController _shakeController;
 
   @override
@@ -33,9 +36,9 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   void dispose() {
-    _shakeController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
@@ -47,21 +50,20 @@ class _LoginPageState extends State<LoginPage>
 
     setState(() => _isLoading = true);
 
-    //     final error = await _authService.login(
-    //       email: _emailController.text.trim(),
-    //       password: _passwordController.text,
-    //     );
+    final error = await _authService.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
 
     if (!mounted) return;
-
     setState(() => _isLoading = false);
 
-    //     if (error != null) {
-    //       _shakeController.forward(from: 0);
-    //       ScaffoldMessenger.of(
-    //         context,
-    //       ).showSnackBar(SnackBar(content: Text(error)));
-    //     }
+    if (error != null) {
+      _shakeController.forward(from: 0);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+    }
   }
 
   @override
@@ -73,14 +75,12 @@ class _LoginPageState extends State<LoginPage>
         width: double.infinity,
         height: double.infinity,
 
+        // 🌈 Gradient background
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isDark
-                ? [Colors.black, Colors.deepPurple.shade600]
-                : [
-                    const Color.fromARGB(255, 168, 145, 220),
-                    Colors.deepPurple.shade900,
-                  ],
+                ? [Colors.black, Colors.grey.shade900]
+                : [const Color(0xFF0A6CFF), const Color(0xFF6EA8FF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -101,151 +101,161 @@ class _LoginPageState extends State<LoginPage>
                   child: child,
                 );
               },
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Add your form fields
-                    // Animated logo
-                    // const Hero(
-                    //   tag: 'app-logo',
-                    //   child: AnimatedGlassLogo(size: 110),
-                    // ),
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      'Welcome Back',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(26),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: Container(
+                    width: 380,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.25),
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(color: Colors.white.withOpacity(0.4)),
                     ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 🧊 Animated Logo
+                          // const Hero(
+                          //   tag: 'app-logo',
+                          //   child: AnimatedGlassLogo(size: 110),
+                          // ),
+                          const SizedBox(height: 24),
 
-                    const SizedBox(height: 6),
-
-                    Text(
-                      'Login to your account',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Email
-                    _glassTextField(
-                      controller: _emailController,
-                      label: 'EmailAddress',
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!RegExp(
-                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                        ).hasMatch(value)) {
-                          return 'Invalid email format';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-                    // Password
-                    _glassTextField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      icon: Icons.lock_outline,
-                      obscureText: !_showPassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _showPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          setState(() => _showPassword = !_showPassword);
-                        },
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // Login Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(
-                            255,
-                            206,
-                            205,
-                            209,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color.fromARGB(255, 53, 71, 183),
-                                  ),
-                                ),
-                              )
-                            : const Text(
-                                'Login',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    //Register Link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account? ",
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: widget.onRegisterPressed,
-                          child: const Text(
-                            'Register',
+                          const Text(
+                            'Welcome Back',
                             style: TextStyle(
-                              color: Colors.yellow,
+                              fontSize: 26,
                               fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 6),
+                          Text(
+                            'Login to your account',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.85),
+                            ),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // 📧 Email
+                          _glassTextField(
+                            controller: _emailController,
+                            label: 'Email',
+                            icon: Icons.email,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Enter email';
+                              }
+                              if (!RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                              ).hasMatch(value)) {
+                                return 'Invalid email';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // 🔐 Password
+                          _glassTextField(
+                            controller: _passwordController,
+                            label: 'Password',
+                            icon: Icons.lock,
+                            obscureText: !_showPassword,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => setState(
+                                () => _showPassword = !_showPassword,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Enter password';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 28),
+
+                          // 🚀 Login Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.blue,
+                                            ),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Login',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.blue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // 🧭 Register
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: widget.onRegisterPressed,
+                                child: const Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

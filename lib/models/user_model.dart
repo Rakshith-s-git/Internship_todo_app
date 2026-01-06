@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class User {
   final String uid;
   final String email;
@@ -24,7 +26,7 @@ class User {
       email: map['email'] ?? '',
       name: map['name'] ?? '',
       createdAt: map['createdAt'] != null
-          ? (map['createdAt'] as dynamic).toDate()
+          ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
     );
   }
