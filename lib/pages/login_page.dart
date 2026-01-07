@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'dashboard_page.dart';
 // import '../widgets/animated_logo.dart';
 
 class LoginPage extends StatefulWidget {
@@ -63,6 +64,25 @@ class _LoginPageState extends State<LoginPage>
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error)));
+    } else {
+      // Navigate to dashboard
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DashboardPage(
+            userId: _authService.currentUser!.uid,
+            onLogout: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      LoginPage(onRegisterPressed: widget.onRegisterPressed),
+                ),
+              );
+            },
+          ),
+        ),
+      );
     }
   }
 
