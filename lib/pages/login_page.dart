@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:task_manager_app/widgets/animated_logo.dart';
 import '../services/auth_service.dart';
 import 'dashboard_page.dart';
 // import '../widgets/animated_logo.dart';
@@ -139,10 +140,10 @@ class _LoginPageState extends State<LoginPage>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // 🧊 Animated Logo
-                          // const Hero(
-                          //   tag: 'app-logo',
-                          //   child: AnimatedGlassLogo(size: 110),
-                          // ),
+                          const Hero(
+                            tag: 'app-logo',
+                            child: AnimatedGlassLogo(size: 110),
+                          ),
                           const SizedBox(height: 24),
 
                           const Text(

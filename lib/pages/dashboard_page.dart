@@ -6,8 +6,11 @@ class DashboardPage extends StatefulWidget {
   final String userId;
   final VoidCallback onLogout;
 
-  const DashboardPage({Key? key, required this.userId, required this.onLogout})
-    : super(key: key);
+  const DashboardPage({
+    super.key,
+    required this.userId,
+    required this.onLogout,
+  });
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -23,8 +26,8 @@ class _DashboardPageState extends State<DashboardPage> {
     _userFuture = _authService.getUserDetails(widget.userId);
   }
 
-  void _logout() {
-    _authService.logout();
+  void _logout() async {
+    await _authService.logout();
     widget.onLogout();
   }
 
@@ -37,7 +40,7 @@ class _DashboardPageState extends State<DashboardPage> {
         backgroundColor: Colors.blue,
         elevation: 0,
         actions: [
-          IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
+          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
       body: FutureBuilder<User?>(
@@ -46,12 +49,15 @@ class _DashboardPageState extends State<DashboardPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
+
           final user = snapshot.data;
+
           if (user == null) {
-            return const Center(child: Text('User not found'));
+            return const Center(child: Text('User data not found'));
           }
 
           return SingleChildScrollView(
@@ -59,6 +65,7 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Profile Card
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -85,7 +92,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       : '?',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 36,
+                                    fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -97,17 +104,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'welcome!',
+                                    'Welcome!',
                                     style: TextStyle(
-                                      fontSize: 24,
+                                      fontSize: 14,
                                       color: Colors.grey[600],
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 4),
                                   Text(
                                     user.name,
-                                    style: TextStyle(
-                                      fontSize: 18,
+                                    style: const TextStyle(
+                                      fontSize: 24,
                                       fontWeight: FontWeight.bold,
                                     ),
                                     overflow: TextOverflow.ellipsis,
@@ -117,12 +124,10 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 24),
                         const Divider(),
-                        const SizedBox(height: 24),
-
-                        // User Details
+                        const SizedBox(height: 16),
+                        // User Info
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -134,7 +139,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 color: Colors.grey[800],
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             _buildInfoRow(Icons.email, 'Email', user.email),
                             const SizedBox(height: 12),
                             _buildInfoRow(
@@ -148,9 +153,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 32),
-                // Quick link
+                // Quick Links
                 Text(
                   'Quick Access',
                   style: TextStyle(

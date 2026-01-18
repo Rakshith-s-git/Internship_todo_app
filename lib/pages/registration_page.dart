@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:task_manager_app/widgets/animated_logo.dart';
 import '../services/auth_service.dart';
 // import '../widgets/animated_logo.dart';
 
@@ -129,9 +130,11 @@ class _RegistrationPageState extends State<RegistrationPage>
                     width: 400,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.25),
+                      color: Colors.white.withValues(alpha: 64),
                       borderRadius: BorderRadius.circular(26),
-                      border: Border.all(color: Colors.white.withOpacity(0.4)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 102),
+                      ),
                     ),
                     child: Form(
                       key: _formKey,
@@ -139,10 +142,10 @@ class _RegistrationPageState extends State<RegistrationPage>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // 🧊 Animated Logo
-                          // const Hero(
-                          //   tag: 'app-logo',
-                          //   child: AnimatedGlassLogo(size: 100),
-                          // ),
+                          const Hero(
+                            tag: 'app-logo',
+                            child: AnimatedGlassLogo(size: 100),
+                          ),
                           const SizedBox(height: 20),
 
                           const Text(
@@ -158,7 +161,7 @@ class _RegistrationPageState extends State<RegistrationPage>
                             'Register to get started',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 217),
                             ),
                           ),
 
@@ -314,7 +317,7 @@ class _RegistrationPageState extends State<RegistrationPage>
                               Text(
                                 'Already have an account? ',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 230),
                                 ),
                               ),
                               GestureDetector(
@@ -365,7 +368,7 @@ class _RegistrationPageState extends State<RegistrationPage>
         prefixIcon: Icon(icon, color: Colors.white),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.15),
+        fillColor: Colors.white.withValues(alpha: 38),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
